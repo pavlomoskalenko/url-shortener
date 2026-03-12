@@ -7,10 +7,13 @@ import com.pavlomoskalenko.urlshortener.entity.ShortUrl;
 import com.pavlomoskalenko.urlshortener.exception.ShortCodeAlreadyTakenException;
 import com.pavlomoskalenko.urlshortener.exception.ShortUrlNotFoundException;
 import com.pavlomoskalenko.urlshortener.mapper.ShortUrlMapper;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class ShortUrlServiceImpl implements ShortUrlService {
@@ -18,19 +21,28 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     private final ShortUrlRepository urlRepository;
     private final Base52IdEncoderService encoderService;
     private final ShortUrlMapper mapper;
+    private final StringRedisTemplate redisTemplate;
 
     public ShortUrlServiceImpl(ShortUrlRepository urlRepository,
                                Base52IdEncoderService encoderService,
-                               ShortUrlMapper mapper) {
+                               ShortUrlMapper mapper,
+                               StringRedisTemplate redisTemplate) {
         this.urlRepository = urlRepository;
         this.encoderService = encoderService;
         this.mapper = mapper;
+        this.redisTemplate = redisTemplate;
     }
 
     @Transactional
     @Override
     public ShortUrlResponse createShortUrl(ShortUrlRequest shortUrlRequest) {
         ShortUrl shortUrl = mapper.mapToEntity(shortUrlRequest);
+
+        Optional<ShortUrl> shortUrlDb = urlRepository.findShortUrlByOriginalUrl(shortUrl.getOriginalUrl());
+        if (shortUrlDb.isPresent()) {
+            return mapper.mapToResponse(shortUrlDb.get());
+        }
+
         if (shortUrl.getShortCode() != null) {
             if (urlRepository.existsShortUrlByShortCode(shortUrl.getShortCode())) {
                 throw new ShortCodeAlreadyTakenException("Such custom alias is not allowed. Short code already exists");
@@ -47,10 +59,20 @@ public class ShortUrlServiceImpl implements ShortUrlService {
 
     @Override
     public String getOriginalUrlByShortCode(String shortCode) {
-        return urlRepository
+        String cacheKey = "url:" + shortCode;
+        String cachedOriginalUrl = redisTemplate.opsForValue().get(cacheKey);
+        if (cachedOriginalUrl != null) {
+            return cachedOriginalUrl;
+        }
+
+        String dbOriginalUrl = urlRepository
                 .findShortUrlByShortCode(shortCode)
-                .filter(shortUrl -> shortUrl.getExpirationDate().isAfter(LocalDateTime.now()))
+                .filter(shortUrl -> shortUrl.getExpirationDate() != null && shortUrl.getExpirationDate().isAfter(LocalDateTime.now()))
                 .orElseThrow(() -> new ShortUrlNotFoundException("There is no url with such short code or it expired"))
                 .getOriginalUrl();
+
+        redisTemplate.opsForValue().set(cacheKey, dbOriginalUrl, Duration.ofHours(1));
+
+        return dbOriginalUrl;
     }
 }
