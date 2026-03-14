@@ -14,7 +14,7 @@ public class ShortUrlMapper {
     private String baseUrl;
 
     public ShortUrl mapToEntity(ShortUrlRequest urlRequest) {
-        LocalDateTime expirationDate = urlRequest.getExpireInDays() != 0
+        LocalDateTime expirationDate = urlRequest.getExpireInDays() != null
                 ? LocalDateTime.now().plusDays(urlRequest.getExpireInDays())
                 : null;
 

@@ -38,4 +38,8 @@ public class ShortUrl {
         this.expirationDate = expirationDate;
     }
 
+    public boolean hasExpired() {
+        return expirationDate != null && expirationDate.isBefore(LocalDateTime.now());
+    }
+
 }

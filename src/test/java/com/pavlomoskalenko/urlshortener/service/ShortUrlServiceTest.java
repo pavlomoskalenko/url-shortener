@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;

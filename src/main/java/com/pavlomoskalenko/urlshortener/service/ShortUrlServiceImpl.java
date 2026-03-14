@@ -38,9 +38,14 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     public ShortUrlResponse createShortUrl(ShortUrlRequest shortUrlRequest) {
         ShortUrl shortUrl = mapper.mapToEntity(shortUrlRequest);
 
-        Optional<ShortUrl> shortUrlDb = urlRepository.findShortUrlByOriginalUrl(shortUrl.getOriginalUrl());
-        if (shortUrlDb.isPresent()) {
-            return mapper.mapToResponse(shortUrlDb.get());
+        Optional<ShortUrl> shortUrlDbOpt = urlRepository.findShortUrlByOriginalUrl(shortUrl.getOriginalUrl());
+        if (shortUrlDbOpt.isPresent()) {
+            ShortUrl shortUrlDb = shortUrlDbOpt.get();
+            if (shortUrlDb.hasExpired()) {
+                shortUrlDb.setExpirationDate(LocalDateTime.now().plusDays(30));
+            }
+
+            return mapper.mapToResponse(shortUrlDb);
         }
 
         if (shortUrl.getShortCode() != null) {
@@ -66,7 +71,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
 
         String dbOriginalUrl = urlRepository
                 .findShortUrlByShortCode(shortCode)
-                .filter(shortUrl -> shortUrl.getExpirationDate() != null && shortUrl.getExpirationDate().isAfter(LocalDateTime.now()))
+                .filter(shortUrl -> !shortUrl.hasExpired())
                 .orElseThrow(() -> new ShortUrlNotFoundException("There is no url with such short code or it expired"))
                 .getOriginalUrl();
 
