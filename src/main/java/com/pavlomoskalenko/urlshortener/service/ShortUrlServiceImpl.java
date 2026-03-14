@@ -59,8 +59,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
 
     @Override
     public String getOriginalUrlByShortCode(String shortCode) {
-        String cacheKey = "url:" + shortCode;
-        String cachedOriginalUrl = redisTemplate.opsForValue().get(cacheKey);
+        String cachedOriginalUrl = redisTemplate.opsForValue().get(shortCode);
         if (cachedOriginalUrl != null) {
             return cachedOriginalUrl;
         }
@@ -71,7 +70,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
                 .orElseThrow(() -> new ShortUrlNotFoundException("There is no url with such short code or it expired"))
                 .getOriginalUrl();
 
-        redisTemplate.opsForValue().set(cacheKey, dbOriginalUrl, Duration.ofHours(1));
+        redisTemplate.opsForValue().set(shortCode, dbOriginalUrl, Duration.ofHours(1));
 
         return dbOriginalUrl;
     }
