@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Excalidraw ###
+*.excalidraw
+excalidraw.log
+
+### Environment ###
+.env
+.env.*

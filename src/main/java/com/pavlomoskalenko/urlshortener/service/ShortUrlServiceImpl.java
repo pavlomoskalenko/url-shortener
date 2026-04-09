@@ -7,6 +7,7 @@ import com.pavlomoskalenko.urlshortener.entity.ShortUrl;
 import com.pavlomoskalenko.urlshortener.exception.ShortCodeAlreadyTakenException;
 import com.pavlomoskalenko.urlshortener.exception.ShortUrlNotFoundException;
 import com.pavlomoskalenko.urlshortener.mapper.ShortUrlMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,22 +17,13 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ShortUrlServiceImpl implements ShortUrlService {
 
     private final ShortUrlRepository urlRepository;
     private final Base52IdEncoderService encoderService;
     private final ShortUrlMapper mapper;
     private final StringRedisTemplate redisTemplate;
-
-    public ShortUrlServiceImpl(ShortUrlRepository urlRepository,
-                               Base52IdEncoderService encoderService,
-                               ShortUrlMapper mapper,
-                               StringRedisTemplate redisTemplate) {
-        this.urlRepository = urlRepository;
-        this.encoderService = encoderService;
-        this.mapper = mapper;
-        this.redisTemplate = redisTemplate;
-    }
 
     @Transactional
     @Override

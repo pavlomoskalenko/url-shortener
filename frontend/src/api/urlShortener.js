@@ -1,3 +1,5 @@
+import { authFetch } from './auth.js';
+
 const API_BASE = '/api';
 
 export async function createShortUrl({ originalUrl, customAlias, expireInDays }) {
@@ -11,7 +13,7 @@ export async function createShortUrl({ originalUrl, customAlias, expireInDays })
     body.expireInDays = Number(expireInDays);
   }
 
-  const response = await fetch(`${API_BASE}/short-url`, {
+  const response = await authFetch(`${API_BASE}/short-url`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

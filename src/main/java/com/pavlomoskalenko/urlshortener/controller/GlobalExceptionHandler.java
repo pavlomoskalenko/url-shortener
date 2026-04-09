@@ -2,9 +2,13 @@ package com.pavlomoskalenko.urlshortener.controller;
 
 import com.pavlomoskalenko.urlshortener.dto.ErrorResponse;
 import com.pavlomoskalenko.urlshortener.exception.ShortUrlNotFoundException;
+import com.pavlomoskalenko.urlshortener.exception.UsernameAlreadyExists;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,13 +19,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private final HttpServletRequest httpServletRequest;
-
-    public GlobalExceptionHandler(HttpServletRequest httpServletRequest) {
-        this.httpServletRequest = httpServletRequest;
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
@@ -43,8 +44,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ShortUrlNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFoundException(RuntimeException ex) {
+    public ResponseEntity<ErrorResponse> handleNotFoundException(ShortUrlNotFoundException ex) {
         return buildErrorResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
+    public ResponseEntity<ErrorResponse> handleAuthException() {
+        return buildErrorResponseEntity(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+    }
+
+    @ExceptionHandler(UsernameAlreadyExists.class)
+    public ResponseEntity<ErrorResponse> handleConflictExists(UsernameAlreadyExists ex) {
+        return buildErrorResponseEntity(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponseEntity(HttpStatus status, String message) {

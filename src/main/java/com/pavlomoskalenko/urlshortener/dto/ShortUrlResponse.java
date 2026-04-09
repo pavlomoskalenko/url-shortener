@@ -1,14 +1,14 @@
 package com.pavlomoskalenko.urlshortener.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ShortUrlResponse {
-    private String originalUrl;
-    private String shortUrl;
-    private LocalDateTime expirationDate;
+    private final String originalUrl;
+    private final String shortUrl;
+    private final LocalDateTime expirationDate;
 }

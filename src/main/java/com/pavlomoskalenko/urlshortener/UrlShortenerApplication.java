@@ -10,5 +10,4 @@ public class UrlShortenerApplication {
         SpringApplication.run(UrlShortenerApplication.class, args);
     }
 
-
 }

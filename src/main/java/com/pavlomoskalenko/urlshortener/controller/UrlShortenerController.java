@@ -4,18 +4,16 @@ import com.pavlomoskalenko.urlshortener.dto.ShortUrlRequest;
 import com.pavlomoskalenko.urlshortener.dto.ShortUrlResponse;
 import com.pavlomoskalenko.urlshortener.service.ShortUrlService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/short-url")
+@RequiredArgsConstructor
 public class UrlShortenerController {
 
-    public ShortUrlService shortUrlService;
-
-    public UrlShortenerController(ShortUrlService shortUrlService) {
-        this.shortUrlService = shortUrlService;
-    }
+    public final ShortUrlService shortUrlService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

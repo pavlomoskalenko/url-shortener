@@ -32,7 +32,7 @@ public class ShortUrl {
     @Column(name = "expiration_date")
     private LocalDateTime expirationDate;
 
-    public ShortUrl( String originalUrl, String shortCode, LocalDateTime expirationDate) {
+    public ShortUrl (String originalUrl, String shortCode, LocalDateTime expirationDate) {
         this.originalUrl = originalUrl;
         this.shortCode = shortCode;
         this.expirationDate = expirationDate;
